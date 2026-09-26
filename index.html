@@ -6,18 +6,18 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="提詞機">
-<meta name="theme-color" content="#001524">
+<meta name="theme-color" content="#578d73">
 <title>JustPlus 提詞機</title>
 <style>
   :root {
-    --bg: #001524;            /* 惟家品牌深藍 brand-navy */
+    --bg: #0d1a16;            /* 深墨綠底：惟家代表色 #578d73 的深色版 */
     --fg: #fff;
-    --accent: #8bc34a;        /* 品牌亮綠：指示線 / highlight，深底上最清楚 */
-    --accent-solid: #6a9739;  /* 品牌主綠：實心按鈕 */
-    --panel: #06283a;
-    --panel-2: #0e3a52;
-    --muted: #7f97a6;
-    --line: #123a52;
+    --accent: #7cbfa3;        /* 代表色亮版：指示線 / highlight，深底上清楚 */
+    --accent-solid: #578d73;  /* 惟家代表色：實心按鈕 */
+    --panel: #16261f;
+    --panel-2: #20362d;
+    --muted: #8ba79b;
+    --line: #2c4238;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -54,7 +54,7 @@
     display: flex;
     flex-direction: column;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    background: #00111c;
+    background: #0a1512;
   }
   #editor .inner {
     display: flex;
@@ -159,7 +159,7 @@
     display: none;
   }
   #guide.show { display: block; }
-  #guide .line { height: 2px; background: rgba(139,195,74,.55); }
+  #guide .line { height: 2px; background: rgba(124,191,163,.55); }
   #guide .arrow {
     position: absolute; top: -8px; left: 12px;
     width: 0; height: 0;
@@ -191,12 +191,12 @@
     width: 58px; height: 58px;
     display: flex; align-items: center; justify-content: center;
     font-size: 22px;
-    background: rgba(14,58,82,.9);
+    background: rgba(32,54,45,.92);
     backdrop-filter: blur(8px);
   }
   #controls .ctrl.wide { width: auto; padding: 0 18px; font-size: 15px; gap: 6px; }
   #playBtn { width: 72px; height: 72px; font-size: 30px; background: var(--accent-solid); color: #fff; }
-  #controls .grp { display: flex; align-items: center; gap: 4px; background: rgba(14,58,82,.9); border-radius: 14px; padding: 4px; }
+  #controls .grp { display: flex; align-items: center; gap: 4px; background: rgba(32,54,45,.92); border-radius: 14px; padding: 4px; }
   #controls .grp .ctrl { width: 48px; height: 48px; background: transparent; font-size: 18px; }
   #controls .grp .label { font-size: 11px; color: var(--muted); min-width: 40px; text-align: center; }
 
@@ -204,7 +204,7 @@
     position: absolute;
     top: calc(14px + env(safe-area-inset-top));
     right: 16px;
-    background: rgba(0,21,36,.65);
+    background: rgba(13,26,22,.7);
     border: 1px solid var(--line);
     border-radius: 20px;
     padding: 8px 14px;
@@ -219,7 +219,7 @@
     top: calc(14px + env(safe-area-inset-top));
     left: 16px;
     width: 44px; height: 44px;
-    background: rgba(0,21,36,.65);
+    background: rgba(13,26,22,.7);
     border: 1px solid var(--line);
     font-size: 18px;
     display: flex; align-items: center; justify-content: center;
