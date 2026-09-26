@@ -121,7 +121,65 @@
     color: #fff;
     border-radius: 14px;
   }
+  #testBtn {
+    height: 46px;
+    margin-top: 10px;
+    font-size: 15px;
+    background: var(--panel-2);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
   .hint { color: var(--muted); font-size: 12px; text-align: center; margin-top: 12px; line-height: 1.6; }
+
+  /* ============ 遙控器測試 ============ */
+  #remoteTest {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 24px;
+    z-index: 20;
+    text-align: center;
+  }
+  #remoteTest.active { display: flex; }
+  #testClose {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 15px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+  }
+  #remoteTest .tbox { max-width: 640px; width: 100%; }
+  #remoteTest .ttitle { color: var(--muted); font-size: 16px; margin: 0 0 24px; }
+  #remoteTest .tkey {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--accent);
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 16px;
+    word-break: break-all;
+    min-height: 44px;
+  }
+  #remoteTest .taction { font-size: 22px; font-weight: 600; margin-top: 20px; min-height: 28px; }
+  #remoteTest .tnote { color: var(--muted); font-size: 14px; margin-top: 10px; line-height: 1.6; }
+  #remoteTest .tlog {
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.9;
+    max-height: 26vh;
+    overflow-y: auto;
+    text-align: left;
+  }
 
   /* ============ 提詞畫面 ============ */
   #prompter {
@@ -290,10 +348,23 @@
     </div>
 
     <button id="startBtn">▶ 開始提詞</button>
+    <button id="testBtn">🎮 測試遙控器按鍵</button>
     <p class="hint">
       藍牙遙控器／翻頁筆：<b>前進鍵＝播放/暫停</b>、<b>後退鍵＝退回重讀</b>、<b>上/下＝加減速</b>。<br>
       在 iPad Safari 用「分享 → 加入主畫面」可全螢幕執行。
     </p>
+  </div>
+</div>
+
+<!-- ============ 遙控器測試 ============ -->
+<div id="remoteTest">
+  <button id="testClose">✕ 關閉</button>
+  <div class="tbox">
+    <p class="ttitle">按一下你的藍牙遙控器 / 翻頁筆</p>
+    <div class="tkey" id="tKey">等待按鍵…</div>
+    <div class="taction" id="tAction">會顯示這顆鍵對應的提詞機動作</div>
+    <p class="tnote" id="tNote"></p>
+    <div class="tlog" id="tLog"></div>
   </div>
 </div>
 
@@ -357,7 +428,14 @@
     controls: document.getElementById("controls"),
     speedBadge: document.getElementById("speedBadge"),
     tapHint: document.getElementById("tapHint"),
-    guide: document.getElementById("guide")
+    guide: document.getElementById("guide"),
+    testBtn: document.getElementById("testBtn"),
+    remoteTest: document.getElementById("remoteTest"),
+    testClose: document.getElementById("testClose"),
+    tKey: document.getElementById("tKey"),
+    tAction: document.getElementById("tAction"),
+    tNote: document.getElementById("tNote"),
+    tLog: document.getElementById("tLog")
   };
 
   var playing = false;
@@ -577,9 +655,53 @@
     if (playing) scheduleHideControls();
   });
 
+  // ---------- 遙控器測試模式 ----------
+  // 說明每個按鍵在提詞畫面會做什麼，方便確認新遙控器能不能用
+  function describeKey(k) {
+    switch (k) {
+      case " ": case "Enter": case "ArrowRight": case "PageDown":
+        return { ok: true, action: "▶ 播放 / 暫停", note: "這顆可以當「前進」鍵" };
+      case "ArrowLeft": case "PageUp":
+        return { ok: true, action: "⏪ 退回重讀", note: "這顆可以當「後退」鍵" };
+      case "ArrowUp":
+        return { ok: true, action: "⏫ 加速", note: "" };
+      case "ArrowDown":
+        return { ok: true, action: "⏬ 減速", note: "" };
+      case "Escape":
+        return { ok: true, action: "✕ 離開提詞畫面", note: "小心：這顆在提詞時會直接退出" };
+      default:
+        return { ok: true, action: "（提詞機沒對應動作）", note: "這顆用不到，換前進/後退那顆試試" };
+    }
+  }
+
+  function openTest() {
+    el.tKey.textContent = "等待按鍵…";
+    el.tAction.textContent = "會顯示這顆鍵對應的提詞機動作";
+    el.tNote.textContent = "";
+    el.tLog.textContent = "";
+    el.remoteTest.classList.add("active");
+  }
+  function closeTest() { el.remoteTest.classList.remove("active"); }
+
+  function handleTestKey(e) {
+    var k = e.key;
+    var d = describeKey(k);
+    el.tKey.textContent = (k === " " ? "空白鍵 (Space)" : k);
+    el.tAction.textContent = d.action;
+    el.tNote.textContent = d.note;
+    var line = document.createElement("div");
+    line.textContent = "• 收到按鍵：" + (k === " " ? "Space" : k) + "  →  " + d.action;
+    el.tLog.insertBefore(line, el.tLog.firstChild);
+    e.preventDefault();
+  }
+
+  el.testBtn.addEventListener("click", openTest);
+  el.testClose.addEventListener("click", closeTest);
+
   // ---------- 藍牙遙控器 / 鍵盤 ----------
   // 多數翻頁筆會送方向鍵 / PageUp/Down / 空白 / Enter（音量鍵網頁抓不到）
   document.addEventListener("keydown", function (e) {
+    if (el.remoteTest.classList.contains("active")) { handleTestKey(e); return; }
     if (!el.prompter.classList.contains("active")) return;
     var k = e.key;
     switch (k) {
